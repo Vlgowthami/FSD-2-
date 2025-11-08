@@ -66,3 +66,38 @@ app.delete('/api/todos/:id', (req, res) => {
 });
 
 app.listen(3000, () => console.log('http://localhost:3000'));
+
+// Gowthami
+const {MongoClient} = require("mongodb");
+const uri = "mongodb+srv://23pa1a05n3:gowth123@testing.6c5figf.mongodb.net/?appName=Testing";
+const client = new MongoClient(uri);
+console.log("Client connected");
+
+async function run() {
+    try {
+        const db = client.db("StudentsDB");
+        console.log("Database Created");
+
+        const students = db.collection("students");
+        console.log("Students collection created");
+
+        await students.insertOne({
+            name: "Gowthami",
+            age: 20
+        })
+        console.log("Data inserted into students");
+
+        await db.collection("students").drop();
+        console.log("Dropped students collection");
+
+        await db.dropDatabase();
+        console.log("")
+    }
+    catch(e) {
+        console.log("Err : ", e);
+    } finally {
+        client.close();
+    }
+}
+
+run();
