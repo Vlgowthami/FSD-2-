@@ -1,0 +1,68 @@
+const api = '/api/todos';
+
+async function load() {
+  const res = await fetch(api), data = await res.json();
+  list.innerHTML = data.map(d => 
+    <li>${d.text} <button onclick="del(${d.id})">Delete</button></li>
+  ).join('');
+}
+
+f.onsubmit = async e => {
+  e.preventDefault();
+  const text = t.value.trim();
+  if (!text) return;
+  await fetch(api, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text }) });
+  t.value = ''; load();
+};
+
+async function del(id) {
+  await fetch(api + '/' + id, { method: 'DELETE' });
+  load();
+}
+
+load();
+
+//2
+
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Mini To-Do</title>
+<style>
+body{font-family:sans-serif;max-width:400px;margin:40px auto}
+input,button{padding:6px;font-size:15px}
+ul{list-style:none;padding:0}
+li{margin:6px 0}
+</style>
+</head>
+<body>
+<h3>📝 To-Do List</h3>
+<form id="f"><input id="t" placeholder="New task"><button>Add</button></form>
+<ul id="list"></ul>
+<script src="main.js"></script>
+</body>
+</html>
+
+
+//3
+
+const express = require('express');
+const app = express();
+app.use(express.json());
+app.use(express.static('public'));
+
+let todos = [], id = 1;
+
+app.get('/api/todos', (req, res) => res.json(todos));
+app.post('/api/todos', (req, res) => {
+  const t = (req.body.text || '').trim();
+  if (t) todos.push({ id: id++, text: t });
+  res.sendStatus(201);
+});
+app.delete('/api/todos/:id', (req, res) => {
+  todos = todos.filter(x => x.id != req.params.id);
+  res.sendStatus(200);
+});
+
+app.listen(3000, () => console.log('http://localhost:3000'));
