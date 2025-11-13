@@ -99,3 +99,10 @@ export default function App() {
     </Router>
   );
 }
+
+
+git clone 
+cd reponame
+code .
+npm i
+npm run start
