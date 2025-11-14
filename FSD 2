@@ -1,108 +1,158 @@
+# Simple Go-Back-N Sliding Window Protocol
 
-// Gowthami
-const {MongoClient} = require("mongodb");
-const uri = "mongodb+srv://23pa1a05n3:gowth123@testing.6c5figf.mongodb.net/?appName=Testing";
-const client = new MongoClient(uri);
-console.log("Client connected");
+WINDOW = 4               # window size
+TOTAL = 10              # total packets to send
 
-async function run() {
-    try {
-        const db = client.db("StudentsDB");
-        console.log("Database Created");
+sender_base = 0
+next_seq = 0
+receiver_expected = 0
 
-        const students = db.collection("students");
-        console.log("Students collection created");
+print("\n--- Go Back N Sliding Window Simulation ---\n")
 
-        await students.insertOne({
-            name: "Gowthami",
-            age: 20
-        })
-        console.log("Data inserted into students");
+while sender_base < TOTAL:
+    
+    # Sender: send packets within window
+    while next_seq < sender_base + WINDOW and next_seq < TOTAL:
+        print(f"SENDER: Sent Packet {next_seq}")
+        next_seq += 1
 
-        await db.collection("students").drop();
-        console.log("Dropped students collection");
+    # Receiver: receives the next expected packet
+    print(f"RECEIVER: Received Packet {receiver_expected} -> ACK {receiver_expected}")
+    
+    # Sender gets ACK and slides window
+    sender_base = receiver_expected + 1
+    receiver_expected += 1
+    print(f"SENDER: Window slides, new base = {sender_base}\n")
 
-        await db.dropDatabase();
-        console.log("")
-    }
-    catch(e) {
-        console.log("Err : ", e);
-    } finally {
-        client.close();
-    }
-}
+print("\nAll packets sent and acknowledged successfully!")
 
-run();
 
 //1
-const express = require('express');
-const app = express();
-app.use(express.json()); // for parsing JSON body
 
-// ⿡ Home route
-app.get('/', (req, res) => res.send('Welcome to the Home Page!'));
+# Distance Vector Routing (Short Version)
 
-// ⿢ About route
-app.get('/about', (req, res) => res.send('This is the About Page.'));
+INF = 10**9
 
-// ⿣ Route with parameter
-app.get('/user/:id', (req, res) => {
-  res.send(User ID: ${req.params.id});
-});
+graph = {
+    'A': {'B': 2, 'C': 5},
+    'B': {'A': 2, 'C': 1, 'D': 2},
+    'C': {'A': 5, 'B': 1, 'D': 3, 'E': 1},
+    'D': {'B': 2, 'C': 3, 'E': 2},
+    'E': {'C': 1, 'D': 2}
+}
 
-// ⿤ Route with query parameters
-app.get('/search', (req, res) => {
-  const { q } = req.query;
-  res.send(q ? Search results for: ${q} : 'No search query provided.');
-});
+nodes = list(graph.keys())
 
-// ⿥ POST route (contact form)
-app.post('/contact', (req, res) => {
-  const { name, message } = req.body;
-  res.send(Thanks ${name}, we received your message: "${message}");
-});
+# Initialize routing tables
+dist = {n: {d: INF for d in nodes} for n in nodes}
+nxt  = {n: {d: None for d in nodes} for n in nodes}
 
-// Start server
-app.listen(3000, () => console.log('Server running on http://localhost:3000'))
+for n in nodes:
+    dist[n][n] = 0
+    nxt[n][n] = n
+    for nb, w in graph[n].items():
+        dist[n][nb] = w
+        nxt[n][nb] = nb
+
+# Distance Vector Algorithm
+changed = True
+while changed:
+    changed = False
+    for u in nodes:
+        for v, w in graph[u].items():
+            for d in nodes:
+                if dist[u][d] > w + dist[v][d]:
+                    dist[u][d] = w + dist[v][d]
+                    nxt[u][d] = v
+                    changed = True
+
+# Print routing tables
+for n in nodes:
+    print(f"\nRouting table of {n}:")
+    print("Dest | Cost | NextHop")
+    for d in nodes:
+        print(f"  {d}   |  {dist[n][d]}   |   {nxt[n][d]}")
 
 //
-// App.js
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+# Simple Broadcast Tree using BFS
 
-function Home() {
-  return <h2>🏠 Home Page</h2>;
+from collections import deque
+
+# Example subnet of hosts
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D', 'E'],
+    'C': ['A', 'F'],
+    'D': ['B'],
+    'E': ['B'],
+    'F': ['C']
 }
 
-function About() {
-  return <h2>ℹ About Page</h2>;
-}
+def broadcast_tree(graph, root):
+    parent = {root: None}      # root has no parent
+    q = deque([root])
 
-function Contact() {
-  return <h2>📞 Contact Page</h2>;
-}
+    while q:
+        u = q.popleft()
+        for v in graph[u]:
+            if v not in parent:     # not visited yet
+                parent[v] = u       # tree edge
+                q.append(v)
+    return parent
 
-export default function App() {
-  return (
-    <Router>
-      <nav style={{ display: "flex", gap: "1rem" }}>
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-        <Link to="/contact">Contact</Link>
-      </nav>
+# Build tree
+root = 'A'
+tree = broadcast_tree(graph, root)
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-      </Routes>
-    </Router>
-  );
-}
+# Print Broadcast Tree
+print("Broadcast Tree (Child <- Parent):")
+for node, p in tree.items():
+    print(f"{node} <- {p}")
 
-
-git clone 
-cd reponame
-code .
-npm i
-npm run start
+//
+Wireshark 
+i. Packet Capture Using Wire shark  
+ii. Starting Wire shark  
+iii. Viewing Captured Traffic  
+iv. Analysis and Statistics & Filters. 
+ 
+i. Packet Capture Using Wireshark 
+Wireshark is a network packet analyzer used to capture live traffic on a computer network. 
+● Launch Wireshark and identify active network interfaces such as Ethernet or Wi
+Fi from the home screen. 
+● Select the interface showing live traffic and click Start Capturing Packets (icon of a 
+blue shark fin) or press Ctrl + E to begin capture. 
+● Wireshark collects frames and displays them in real time as a list in the Packet List 
+Pane. 
+ii. Starting Wireshark 
+● Open Wireshark via Start Menu or Terminal. 
+● Choose your network interface card (NIC) that carries internet traffic (for example, Wi
+Fi 3 or eth0). 
+● Click on Capture → Start, or use the keyboard shortcut Ctrl + E to begin recording 
+packets. 
+● Let it run briefly and then click Capture → Stop to finish. 
+● Save your capture as .pcap file for further analysis. 
+ 
+iii. Viewing Captured Traffic 
+The Wireshark main window has three panes for inspecting packets: 
+1. Packet List Pane – Displays each captured packet with details such as number, time, 
+source, destination, protocol, and length. 
+2. Packet Details Pane – Shows the hierarchical structure of selected packet protocols 
+(Ethernet, IP, TCP, HTTP, etc.). 
+ 
+ 
+3. Packet Bytes Pane – Displays raw data (in hexadecimal or ASCII) of the selected packet 
+for low-level analysis. 
+Clicking on any packet updates the other panes instantly, providing detail down to field-level 
+structure in network headers. 
+iv. Analysis and Statistics & Filters 
+Wireshark provides analytical tools and filtering options for traffic examination: 
+● Display Filters limit visible packets using syntax like ip.addr == 192.168.1.5, http, 
+or tcp.port == 80. 
+● Statistics Menu includes features: 
+● Protocol Hierarchy: shows proportion of Ethernet, IP, TCP, and application
+layer traffic. 
+● Conversations: lists communication pairs between devices. 
+● IO Graphs: visualizes traffic volume over time. 
+● Follow TCP Stream reconstructs full client-server communication for one session. 
+● Expert Info highlights retransmissions, delays, or malformed packets.
